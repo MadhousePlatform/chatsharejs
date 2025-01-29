@@ -32,7 +32,6 @@ export default class LogToConsole {
   }
 
   private output(text: string[], type: string, color: ChalkInstance): void {
-    // @ts-ignore
     console.log(color(`${this.time} [console/${type}] ${text}`), chalk.reset('\n'));
   }
 }

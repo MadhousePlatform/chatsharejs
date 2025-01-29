@@ -19,10 +19,3 @@ export const request = axios.create({
   withCredentials: true,
   baseURL: config.SERVER_API,
 });
-
-process.on('exit', (code) => {
-  // Close open file handler.
-  log.debug(`Exiting... Close file handlers. (Code ${code})`)
-  flog.debug(`Exiting... Close file handlers. (Code ${code})`);
-  flog.destruct();
-})

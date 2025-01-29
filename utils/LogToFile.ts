@@ -7,7 +7,7 @@ export default class LogToFile {
   file: any;
 
   constructor() {
-    const date = DateTime.now().toFormat('yyyy-LL-dd');
+    const date: string = DateTime.now().toFormat('yyyy-LL-dd');
 
     // Open the file and place cursor at *end* of the file.
     this.file = fs.openSync(`${__dirname}/../logs/${date}.log`, 'a+', );
