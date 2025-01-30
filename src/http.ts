@@ -30,7 +30,7 @@ app.post('/rehash', (req: Request, res: Response<any>) => {
   log.error('Invalid Bearer token.');
 })
 
-app.listen({
+const listener = app.listen({
   port: config.HTTP_PORT,
   hostname: config.HTTP_ADDR,
 }, () => {
@@ -54,6 +54,7 @@ process.on('SIGINT', (code: number) => {
 });
 
 function doExit(code: number) {
+  listener.close();
   flog.error(`Unexpected exit. Error code: ${code}`);
   pid.removeOnExit();
 }
