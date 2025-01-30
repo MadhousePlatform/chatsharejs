@@ -1,0 +1,18 @@
+export default {
+  parsers: [
+    {
+      parser: "parserB",
+      regexes: {
+        join_re: /\[.*] \[Server thread\/INFO] \[minecraft\/MinecraftServer]: \[.*] (.*) joined the game/g,
+        part_re: /\[.*] \[Server thread\/INFO] \[minecraft\/MinecraftServer]: (.*) left the game/g,
+        message_re: /\[.*] \[Server thread\/INFO] \[minecraft\/MinecraftServer]: <\[.*] <(.*)>> (.*)/g
+      }
+    }
+  ],
+  servers: [
+    {
+      server: "atm10",
+      parser: "parserB"
+    }
+  ]
+}

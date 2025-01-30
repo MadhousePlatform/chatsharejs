@@ -12,3 +12,5 @@ dist
 
 # Secret files
 .env
+map.ts
+*.pid
