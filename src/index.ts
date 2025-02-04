@@ -1,11 +1,27 @@
-import { flog, log } from "./bootstrap.ts";
+import { config, log } from "./bootstrap.ts";
 import Server from "$/Server.ts";
 import { AxiosResponse } from "axios";
 import Parser from "$/Parser.ts";
 import PterodactylServer from "&/PterodactylServer.ts";
 import InternalServer from "&/InternalServer.ts";
+import Docker from "$/Docker.ts";
+import { client } from "../bot/madbot.ts";
+import { TextChannel, Message } from "discord.js";
+
+async function startDiscordBot(): Promise<void> {
+  await client.login(config.DISCORD_TOKEN)
+  // @ts-ignore
+  const channel: TextChannel = await client.channels.fetch(config.DISCORD_CHANNEL);
+  channel.send(`I'm online!`).then((message: Message) => {
+    setTimeout(() => {
+      message.delete();
+    }, 5000);
+  });
+}
 
 async function startChatShare(): Promise<void> {
+  await startDiscordBot();
+
   const servers: AxiosResponse = await (new Server).get_all();
   const ids: Array<InternalServer> = [];
   servers.data.data.filter(
@@ -14,11 +30,12 @@ async function startChatShare(): Promise<void> {
       : ''
   );
 
-  ids.forEach((server: InternalServer) => {
+  [{ exid: 'vanilla', cid: '224cced156e8' }].forEach((server: InternalServer) => {
     log.debug(`Iterating servers (Server: ${server.exid})`)
     const parser = new Parser(server);
     if (parser !== undefined) {
       parser.new();
+      (new Docker).handle_server(server, parser, ids);
     }
   });
 }
@@ -26,23 +43,3 @@ async function startChatShare(): Promise<void> {
 startChatShare().then((): void => {
   log.debug('Starting ChatShare');
 });
-
-process.on('exit', (code: number) => {
-  doExit(code);
-});
-
-process.on('SIGHUP', (code: number) => {
-  doExit(code);
-});
-
-process.on('SIGTERM', (code: number) => {
-  doExit(code);
-});
-
-process.on('SIGINT', (code: number) => {
-  doExit(code);
-});
-
-function doExit(code: number) {
-    flog.error(`Unexpected exit. Error code: ${code}`);
-}

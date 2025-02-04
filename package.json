@@ -21,6 +21,7 @@
     "build": "rm chatshare.pid && tsc && vite build"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.34",
     "@types/express": "^5.0.0",
     "@types/luxon": "^3.4.2",
     "@types/node": "^22.13.1",
@@ -35,9 +36,9 @@
     "axios": "^1.7.9",
     "chalk": "^5.4.1",
     "discord.js": "^14.17.3",
+    "dockerode": "^4.0.4",
     "dotenv": "^16.4.7",
     "luxon": "^3.5.0",
-    "simple-dockerjs": "^0.0.9",
     "typescript-logging": "^2.2.0",
     "typescript-logging-log4ts-style": "^2.2.0"
   }

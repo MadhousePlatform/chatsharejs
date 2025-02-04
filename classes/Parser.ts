@@ -3,12 +3,13 @@ import InternalServer from "&/InternalServer.ts";
 import ServerEntry from "&/ServerEntry.ts";
 import ParserEntry from "&/ParserEntry.ts";
 import ParserRegex from "&/ParserRegex.ts";
+import ParsedMessage from "&/ParsedMessage.ts";
 
 export default class Parser {
   serversMap: any;
   parsersMap: any;
   server: InternalServer;
-  parser: ParserRegex|undefined;
+  parser: ParserRegex | undefined;
 
   constructor(server: InternalServer) {
     this.server = server;
@@ -22,19 +23,79 @@ export default class Parser {
 
     this.parser = parser;
     return {
-      join_re: new RegExp(parser.join_re),
-      part_re: new RegExp(parser.part_re),
-      message_re: new RegExp(parser.message_re)
+      join_re: parser.join_re,
+      part_re: parser.part_re,
+      message_re: parser.message_re
     }
   }
 
-  private parse_message(message: string) {
-    if (this.parser?.join_re.test(message)) {
+  /**
+   * Dear programmer:
+   * When I wrote this code, only god and
+   * I knew how it worked.
+   * Now, only god knows it!
+   *
+   * Therefore, if you are trying to optimize
+   * this routine, and it fails (most surely),
+   * please increase this counter as a
+   * warning for the next person:
+   *
+   * total hours wasted here = 6
+   */
+  parse_message(message: string, parser: Parser): ParsedMessage {
+    const prsr: ParserRegex = this.resolve_parser(this.get_server_parser());
 
-    } else if (this.parser?.part_re.test(message)) {
+    if (prsr.join_re.test(message)) {
+      prsr.join_re.exec(message)
+      const props: { [key: string]: string } | undefined = prsr.join_re.exec(message)?.groups
 
-    } else if (this.parser?.message_re.test(message)) {
-      
+      return {
+        // @ts-ignore
+        message: `[mc:${parser.server.exid}] **${props.user}** has joined the game.`,
+        // @ts-ignore
+        user: props.user,
+        msg: null,
+        type: 'join',
+        source: parser.server.exid,
+      }
+    } else if (prsr.part_re.test(message)) {
+      prsr.part_re.exec(message)
+      const props: { [key: string]: string } | undefined = prsr.part_re.exec(message)?.groups
+
+      return {
+        // @ts-ignore
+        message: `[mc:${parser.server.exid}] **${props.user}** has left the game.`,
+        // @ts-ignore
+        user: props.user,
+        msg: null,
+        type: 'part',
+        source: parser.server.exid,
+      }
+    } else if (prsr.message_re.test(message)) {
+      prsr.message_re.exec(message)
+      const props: { [key: string]: string } | undefined = prsr.message_re.exec(message)?.groups
+
+      return {
+        // @ts-ignore
+        message: `[mc:${parser.server.exid}] <**${props.user}**> ${props.msg}`,
+        // @ts-ignore
+        user: props.user,
+        // @ts-ignore
+        msg: props.msg,
+        type: 'message',
+        source: parser.server.exid,
+      }
+    }
+
+    return {
+      // @ts-ignore
+      message: '',
+      // @ts-ignore
+      user: '',
+      // @ts-ignore
+      msg: '',
+      type: 'void',
+      source: '',
     }
   }
 
