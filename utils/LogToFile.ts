@@ -1,9 +1,8 @@
-import chalk from 'chalk';
 import { DateTime } from 'luxon';
 import fs from 'fs';
 
 export default class LogToFile {
-  time: string = chalk.dim.gray(`[${DateTime.now().toFormat('hh:mm:ss a')}]`);
+  time: string = `[${DateTime.now().toFormat('hh:mm:ss a')}]`;
   file: any;
 
   constructor() {
@@ -18,26 +17,26 @@ export default class LogToFile {
   }
 
   error(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/error] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/error] ${text}\n`);
   }
 
   warn(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/warn] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/warn] ${text}\n`);
   }
 
   success(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/success] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/success] ${text}\n`);
   }
 
   info(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/info] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/info] ${text}\n`);
   }
 
   log(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/log] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/log] ${text}\n`);
   }
 
   debug(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/debug] ${text}`);
+    fs.writeSync(this.file, `${this.time} [log/debug] ${text}\n`);
   }
 }
