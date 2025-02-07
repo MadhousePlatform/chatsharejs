@@ -26,7 +26,7 @@ async function startChatShare(): Promise<void> {
   const ids: Array<InternalServer> = [];
   servers.data.data.filter(
     (s: PterodactylServer) => !s.attributes.suspended && s.attributes.external_id !== null
-      ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.identifier })
+      ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid })
       : ''
   );
 
