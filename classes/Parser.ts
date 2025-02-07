@@ -88,11 +88,8 @@ export default class Parser {
     }
 
     return {
-      // @ts-ignore
       message: '',
-      // @ts-ignore
       user: '',
-      // @ts-ignore
       msg: '',
       type: 'void',
       source: '',

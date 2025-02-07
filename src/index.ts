@@ -30,12 +30,12 @@ async function startChatShare(): Promise<void> {
       : ''
   );
 
-  [{ exid: 'vanilla', cid: '224cced156e8' }].forEach((server: InternalServer) => {
+  servers.data.forEach((server: InternalServer) => {
     log.debug(`Iterating servers (Server: ${server.exid})`)
     const parser = new Parser(server);
     if (parser !== undefined) {
       parser.new();
-      (new Docker).handle_server(server, parser, ids);
+      (new Docker).handle_server(server, parser, servers.data);
     }
   });
 }

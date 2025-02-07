@@ -1,50 +1,93 @@
 import InternalServer from "&/InternalServer.ts";
-import docker from 'dockerode';
+import docker, { Container } from 'dockerode';
 import { client } from "../bot/madbot.ts";
-import { config } from "@/bootstrap.ts";
+import { config, flog, log } from "@/bootstrap.ts";
 import { TextChannel } from "discord.js";
 import Parser from "$/Parser.ts";
 
 export default class Docker {
   handle_server(server: InternalServer, parser: Parser, all_servers: InternalServer[]): void {
-    let cntnr = new docker();
-    let dckr = cntnr.getContainer(server.cid);
-    dckr.attach({ stream: true, stdout: true, stderr: true }, async (_err: any, stream) => {
+    let cntnr = new docker({
+      socketPath: '/var/run/docker.sock'
+    });
+    let dckr: Container = cntnr.getContainer(server.cid);
+
+    dckr.attach({
+      stream: true,
+      stdout: true,
+      stderr: true
+    }, async (_err: any, stream: NodeJS.ReadWriteStream | undefined) => {
       // @ts-ignore
       const chan: TextChannel = await client.channels.fetch(config.DISCORD_CHANNEL);
-      // @ts-ignore
-      stream.on('data', (chunk) => {
+      if (stream === undefined) throw Error("Stream is not defined??????");
+
+      stream.on('data', async (chunk) => {
+        // get data from chunk and convert to string
         const data: string = Buffer.from(chunk).toString()
+        // figure out the command we want to send.
         const { message, user, msg, type, source } = parser.parse_message(data, parser);
+
         if (message !== null && type !== "void") {
-          chan.send(message);
-          /*
-           * @todo: get this to attach to container and write to minecraft then detach container.
-           */
-          all_servers.forEach((s: InternalServer) => {
-            cntnr.getContainer(s.cid)
-              .attach(
-                { stream: true, stdout: true, stderr: true },
-                async (_err: any, stream) => {
-                  let msgText: string = '';
+          /* send to discord */
+          await chan.send(message).then(() => {
+            /* get command for minecraft */
+            const cmd: string = this.getMessage(user, msg, type, source)
 
-                  switch (type) {
-                    case 'join':
-                      msgText = `tellraw @a [{{"text":"[${source}] ","color":"red"}},{{"text":"${user} has joined the server","color":"white"}}]\n`;
-                      break;
-                    case 'part':
-                      msgText = `tellraw @a [{{"text":"[${source}] ","color":"red"}},{{"text":"${user} has left the server","color":"white"}}]\n`;
-                      break;
-                    case 'message':
-                      msgText = `tellraw @a [{{"text":"[${source}] ","color":"red"}},{{"text":"<${user}> ","color":"blue"}},{{"text":"${msg}","color":"white"}}]\n`;
-                      break;
-                  }
-
-                  stream?.write(msgText);
-                })
-          })
+            this.broadcastToAll(cmd, all_servers, cntnr, server)
+          });
         }
       });
     })
+  }
+
+  private broadcastToAll(cmd: string, all_servers: InternalServer[], docker: docker, server: InternalServer): void {
+    all_servers.forEach((s: InternalServer): void => {
+      if (server.exid === s.exid) return;
+
+      const opts: object = { stream: true, stdout: true, stderr: true, stdin: true, hijack: true, tty: true };
+      docker.getContainer(s.cid)
+        .attach(opts, (_err: any, stream: NodeJS.ReadWriteStream): void => {
+          stream?.pipe(process.stdout);
+          stream?.pipe(process.stderr);
+
+          console.error(_err);
+
+          stream?.on('data', (data: any) => {
+            console.log(data.toString());
+          })
+          process.stdin.resume();
+          process.stdin.setRawMode(true);
+          stream?.write(cmd);
+
+          setTimeout(() => {
+            stream?.end();
+            process.stdin.removeAllListeners();
+            process.stdin.setRawMode(false);
+            process.stdin.resume();
+          }, 5000);
+        });
+    })
+  }
+
+  private getMessage(user: string, msg: string | null, type: 'join' | 'part' | 'message' | 'void', source: string): string {
+    let msgText: string = '';
+
+    switch (type) {
+      case 'join':
+        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"${user} has joined the server","color":"white"}]\n`;
+        break;
+      case 'part':
+        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"${user} has left the server","color":"white"}]\n`;
+        break;
+      case 'message':
+        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"<${user}> ","color":"blue"},{"text":"${msg}","color":"white"}]\n`;
+        break;
+      case 'void':
+      default:
+        flog.warn(`Docker.getMessage()->type was not join|part|message`)
+        break;
+    }
+
+    return msgText;
   }
 }
