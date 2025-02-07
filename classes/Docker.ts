@@ -19,7 +19,7 @@ export default class Docker {
     }, async (_err: any, stream: NodeJS.ReadWriteStream | undefined) => {
       // @ts-ignore
       const chan: TextChannel = await client.channels.fetch(config.DISCORD_CHANNEL);
-      if (stream === undefined) throw Error("Stream is not defined??????");
+      if (!stream) throw Error("Stream is not defined??????");
 
       stream.on('data', async (chunk) => {
         // get data from chunk and convert to string

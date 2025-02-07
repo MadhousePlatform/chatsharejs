@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [tsconfigPaths({
     root: __dirname,
   })],
+  build: {
+
+    rollupOptions: {
+      external: ['zlib-sync']
+    }
+  },
   resolve:{
     alias: {
       "@": path.resolve(__dirname, "src"),

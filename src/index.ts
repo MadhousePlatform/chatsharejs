@@ -30,7 +30,7 @@ async function startChatShare(): Promise<void> {
       : ''
   );
 
-  servers.data.forEach((server: InternalServer) => {
+  ids.forEach((server: InternalServer) => {
     log.debug(`Iterating servers (Server: ${server.exid})`)
     const parser = new Parser(server);
     if (parser !== undefined) {
