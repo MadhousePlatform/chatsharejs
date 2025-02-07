@@ -1,7 +1,7 @@
 import InternalServer from "&/InternalServer.ts";
 import docker, { Container } from 'dockerode';
 import { client } from "../bot/madbot.ts";
-import { config, flog, log } from "@/bootstrap.ts";
+import { config, flog } from "@/bootstrap.ts";
 import { TextChannel } from "discord.js";
 import Parser from "$/Parser.ts";
 
@@ -46,15 +46,11 @@ export default class Docker {
 
       const opts: object = { stream: true, stdout: true, stderr: true, stdin: true, hijack: true, tty: true };
       docker.getContainer(s.cid)
+        // @ts-ignore
         .attach(opts, (_err: any, stream: NodeJS.ReadWriteStream): void => {
           stream?.pipe(process.stdout);
           stream?.pipe(process.stderr);
 
-          console.error(_err);
-
-          stream?.on('data', (data: any) => {
-            console.log(data.toString());
-          })
           process.stdin.resume();
           process.stdin.setRawMode(true);
           stream?.write(cmd);
