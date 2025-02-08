@@ -6,7 +6,8 @@ import PterodactylServer from "&/PterodactylServer.ts";
 import InternalServer from "&/InternalServer.ts";
 import Docker from "$/Docker.ts";
 import { client } from "../bot/madbot.ts";
-import { TextChannel, Message } from "discord.js";
+import { TextChannel, Message, Events } from "discord.js";
+import docker from "dockerode";
 
 async function startDiscordBot(): Promise<void> {
   await client.login(config.DISCORD_TOKEN)
@@ -33,6 +34,19 @@ async function startChatShare(): Promise<void> {
   const my_servers: InternalServer[] = process.env.NODE_ENV === 'production'
     ? ids
     : [{exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1'}];
+
+  let cntnr = new docker({
+    socketPath: '/var/run/docker.sock'
+  });
+
+  client.on(Events.MessageCreate, async (message: Message) => {
+    if (message.author.bot) return;
+    if (message.channelId !== config.DISCORD_CHANNEL) return;
+
+    const cmd: string = `tellraw @a [{"text":"[discord] ","color":"blue"},{"text":"<${message.author.username}> ","color":"light_purple"},{"text":"${message.content}","color":"white"}]\n`;
+
+    (new Docker).broadcastToAll(cmd, my_servers, cntnr, null)
+  })
 
   my_servers.forEach((server: InternalServer) => {
     log.debug(`Iterating servers (Server: ${server.exid})`)
