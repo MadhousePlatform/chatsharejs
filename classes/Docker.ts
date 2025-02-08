@@ -64,12 +64,10 @@ export default class Docker {
           process.stdin.setRawMode(true);
           stream?.write(cmd);
 
-          setTimeout(() => {
-            stream?.end();
-            process.stdin.removeAllListeners();
-            process.stdin.setRawMode(false);
-            process.stdin.resume();
-          }, 5000);
+          stream?.end();
+          process.stdin.removeAllListeners();
+          process.stdin.setRawMode(false);
+          process.stdin.resume();
         });
     })
   }
