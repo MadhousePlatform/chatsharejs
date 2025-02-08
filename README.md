@@ -33,20 +33,10 @@ servers: [
 ]
 ```
 
-Afterwards, simply rebuild the docker image
+Then run this command
 ```shell
-$ docker build .
-```
-
-and run it with
-```shell
-$ docker run --network infrastructure_default --rm --env-file=.env -v /var/run/docker.sock:/var/run/docker.sock -it <sha256_hash> 
+$ docker compose down && docker compose up -d 
 ```
 
 ## Todo
-- [ ] Auto-detect the regex?
-- [ ] Read messages from Discord into the servers.
-- [ ] Do the adult readme
-- [ ] Automate deployment
-- [ ] Mount `map.ts` so we don't have to rebuild every time?????
-- [ ] Use a `docker-compose.yml` for manager??
+[Todo list here](https://github.com/orgs/MadhousePlatform/projects/6/views/1)

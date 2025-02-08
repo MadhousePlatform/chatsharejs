@@ -40,9 +40,9 @@ export default class Docker {
     })
   }
 
-  private broadcastToAll(cmd: string, all_servers: InternalServer[], docker: docker, server: InternalServer): void {
+  broadcastToAll(cmd: string, all_servers: InternalServer[], docker: docker, server: InternalServer | null): void {
     all_servers.forEach((s: InternalServer): void => {
-      if (server.exid === s.exid) return;
+      if (server !== null && server.exid === s.exid) return;
 
       const opts: object = { stream: true, stdout: true, stderr: true, stdin: true, hijack: true, tty: true };
       docker.getContainer(s.cid)
