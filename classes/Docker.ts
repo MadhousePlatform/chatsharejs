@@ -62,11 +62,11 @@ export default class Docker {
 
           process.stdin.resume();
           process.stdin.setRawMode(true);
-          stream?.write(cmd);
+          stream.write(cmd);
 
-          stream?.end();
           process.stdin.removeAllListeners();
           process.stdin.setRawMode(false);
+          stream.end();
         });
     })
   }
