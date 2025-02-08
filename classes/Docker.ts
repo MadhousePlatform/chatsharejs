@@ -67,7 +67,6 @@ export default class Docker {
           stream?.end();
           process.stdin.removeAllListeners();
           process.stdin.setRawMode(false);
-          process.stdin.resume();
         });
     })
   }
