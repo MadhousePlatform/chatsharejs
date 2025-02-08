@@ -42,3 +42,11 @@ and run it with
 ```shell
 $ docker run --network infrastructure_default --rm --env-file=.env -v /var/run/docker.sock:/var/run/docker.sock -it <sha256_hash> 
 ```
+
+## Todo
+- [ ] Auto-detect the regex?
+- [ ] Read messages from Discord into the servers.
+- [ ] Do the adult readme
+- [ ] Automate deployment
+- [ ] Mount `map.ts` so we don't have to rebuild every time?????
+- [ ] Use a `docker-compose.yml` for manager??
