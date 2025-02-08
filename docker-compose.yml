@@ -12,3 +12,7 @@ services:
       - 'map.ts:map.ts'
     networks:
       - infrastructure_default
+
+networks:
+  infrastructure_default:
+    driver: local
