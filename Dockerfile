@@ -16,7 +16,6 @@ COPY classes ./classes
 COPY src ./src
 COPY types ./types
 COPY utils ./utils
-COPY .env ./.env
 COPY tsconfig.json ./tsconfig.json
 COPY vite.config.ts ./vite.config.ts
 COPY docker-compose.yml ./docker-compose.yml
