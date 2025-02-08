@@ -45,5 +45,5 @@ jobs:
           context: .
           file: Dockerfile  # Specify the Dockerfile if it’s named differently
           push: true        # Push the image after building
-          tags: ghcr.io/chatsharejs:latest # Use repository name for image tag
+          tags: ghcr.io/madhouseplatform/chatsharejs:latest # Use repository name for image tag
 
