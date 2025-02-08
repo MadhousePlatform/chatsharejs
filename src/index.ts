@@ -19,7 +19,9 @@ async function startDiscordBot(): Promise<void> {
   });
 }
 
-async function gather_servers() {
+async function startChatShare(): Promise<void> {
+  await startDiscordBot();
+
   const servers: AxiosResponse = await (new Server).get_all();
   const ids: Array<InternalServer> = [];
   servers.data.data.filter(
@@ -28,26 +30,16 @@ async function gather_servers() {
       : ''
   );
 
-  const my_servers = (process.env.NODE_ENV !== 'production')
-    ? [{ exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1' }]
-    : ids;
+  const my_servers: InternalServer[] = process.env.NODE_ENV === 'production'
+    ? ids
+    : [{exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1'}];
 
-  return {
-    servers,
-    my_servers,
-  }
-}
-
-async function startChatShare(): Promise<void> {
-  await startDiscordBot();
-  let servers = await gather_servers();
-
-  servers.my_servers.forEach((server: InternalServer) => {
+  my_servers.forEach((server: InternalServer) => {
     log.debug(`Iterating servers (Server: ${server.exid})`)
     const parser = new Parser(server);
     if (parser !== undefined) {
       parser.new();
-      (new Docker).handle_server(server, parser, servers.my_servers);
+      (new Docker).handle_server(server, parser, my_servers);
     }
   });
 }
@@ -55,5 +47,3 @@ async function startChatShare(): Promise<void> {
 startChatShare().then((): void => {
   log.debug('Starting ChatShare');
 });
-
-export { gather_servers };

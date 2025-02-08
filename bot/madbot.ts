@@ -8,6 +8,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent
   ]
 });
+
 client.once(Events.ClientReady, (readyClient: Client<true>) => {
   log.info(`Logged in as ${readyClient.user.tag}`)
 });
