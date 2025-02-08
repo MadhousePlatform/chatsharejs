@@ -2,8 +2,9 @@ import InternalServer from "&/InternalServer.ts";
 import docker, { Container } from 'dockerode';
 import { client } from "../bot/madbot.ts";
 import { config, flog } from "@/bootstrap.ts";
-import { TextChannel } from "discord.js";
+import { Events, Message, TextChannel } from "discord.js";
 import Parser from "$/Parser.ts";
+import { gather_servers } from "@/index.ts";
 
 export default class Docker {
   handle_server(server: InternalServer, parser: Parser, all_servers: InternalServer[]): void {
@@ -11,6 +12,16 @@ export default class Docker {
       socketPath: '/var/run/docker.sock'
     });
     let dckr: Container = cntnr.getContainer(server.cid);
+
+    client.on(Events.MessageCreate, async (message: Message) => {
+      if (message.author.bot || message.channelId !== config.DISCORD_CHANNEL) return;
+
+      const cmd = `tellraw @a [{"text":"[discord] ","color":"blue"},{"text":"<${message.author.username}> ","color":"light_purple"},{"text":"${message.content}","color":"white"}]\n`;
+
+      const servers = await gather_servers();
+
+      this.broadcastToAll(cmd, servers.my_servers, cntnr, null)
+    })
 
     dckr.attach({
       stream: true,
