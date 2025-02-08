@@ -28,7 +28,9 @@ async function gather_servers() {
       : ''
   );
 
-  const my_servers: InternalServer[] = [{exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1'}];
+  const my_servers = (process.env.NODE_ENV !== 'production')
+    ? [{ exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1' }]
+    : ids;
 
   return {
     servers,
