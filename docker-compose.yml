@@ -1,4 +1,4 @@
-name: chatsharejs
+name: infrastructure
 
 services:
   chatshare:
@@ -11,8 +11,8 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - './map.ts:./map.ts'
     networks:
-      - infrastructure_default
+      - default
 
 networks:
-  infrastructure_default:
-    driver: local
+  default:
+    driver: bridge
