@@ -2,7 +2,7 @@ name: chatsharejs
 
 services:
   chatshare:
-    build: .
+    image: ghcr.io/madhouseplatform/chatsharejs:latest
     stdin_open: true  # -i
     tty: true       # -t
     environment:
