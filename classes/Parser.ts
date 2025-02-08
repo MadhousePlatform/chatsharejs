@@ -102,6 +102,10 @@ export default class Parser {
   }
 
   private resolve_parser(parser: string): ParserRegex {
-    return this.parsersMap.find((pe: ParserEntry): boolean => parser === pe.parser).regexes
+    const regexes = this.parsersMap.find((pe: ParserEntry): boolean => parser === pe.parser).regexes
+
+    if(!regexes) return this.parsersMap.find((): boolean => parser === 'vanilla').regexes;
+
+    return regexes;
   }
 }
