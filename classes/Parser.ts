@@ -98,14 +98,13 @@ export default class Parser {
 
   private get_server_parser(): string {
     const parser: ParserEntry = this.serversMap.find((se: ServerEntry): boolean => this.server.exid === se.server);
+
+    if (!parser) return "vanilla";
+
     return parser.parser;
   }
 
   private resolve_parser(parser: string): ParserRegex {
-    const regexes = this.parsersMap.find((pe: ParserEntry): boolean => parser === pe.parser).regexes
-
-    if(!regexes) return this.parsersMap.find((): boolean => parser === 'vanilla').regexes;
-
-    return regexes;
+    return this.parsersMap.find((pe: ParserEntry): boolean => parser === pe.parser).regexes
   }
 }
