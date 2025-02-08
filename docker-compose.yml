@@ -1,0 +1,14 @@
+name: chatsharejs
+
+services:
+  chatshare:
+    build: .
+    stdin_open: true  # -i
+    tty: true       # -t
+    environment:
+      EULA: TRUE
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'map.ts:map.ts'
+    networks:
+      - infrastructure_default

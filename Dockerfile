@@ -11,11 +11,18 @@ RUN npm install
 
 
 # Copy source code
-COPY . .
+COPY bot ./bot
+COPY classes ./classes
+COPY src ./src
+COPY types ./types
+COPY utils ./utils
+COPY .env ./.env
+COPY tsconfig.json ./tsconfig.json
+COPY vite.config.ts ./vite.config.ts
+COPY docker-compose.yml ./docker-compose.yml
 
 # Create logs directory
 RUN mkdir -p logs
-
 
 # Set environment variables
 ENV NODE_ENV=production
