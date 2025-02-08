@@ -35,7 +35,7 @@ async function startChatShare(): Promise<void> {
     const parser = new Parser(server);
     if (parser !== undefined) {
       parser.new();
-      (new Docker).handle_server(server, parser, servers.data);
+      (new Docker).handle_server(server, parser, ids);
     }
   });
 }
