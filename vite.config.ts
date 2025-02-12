@@ -18,6 +18,7 @@ export default defineConfig({
       "$": path.resolve(__dirname, "classes"),
       "#": path.resolve(__dirname, "utils"),
       "&": path.resolve(__dirname, "types"),
+      "%": path.resolve(__dirname, "bot")
     }
   }
 })
