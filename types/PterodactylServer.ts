@@ -1,9 +1,8 @@
-export default interface PterodactylServer
-{
+export default interface PterodactylServer {
   object: String,
   attributes: {
     id: number,
-    external_id: string|null,
+    external_id: string | null,
     uuid: string,
     identifier: string,
     name: string,
@@ -15,7 +14,7 @@ export default interface PterodactylServer
       disk: number,
       io: number,
       cpu: number,
-      threads: number|null,
+      threads: number | null,
     },
     feature_limits: {
       databases: number,

@@ -1,5 +1,4 @@
-export default interface ServerEntry
-{
+export default interface ServerEntry {
   server: string,
   parser: string,
 }

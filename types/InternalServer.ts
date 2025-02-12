@@ -1,5 +1,4 @@
-export default interface InternalServer
-{
+export default interface InternalServer {
   exid: string,
   cid: string,
 }
