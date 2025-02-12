@@ -40,68 +40,38 @@ export default class Parser {
    * please increase this counter as a
    * warning for the next person:
    *
-   * total hours wasted here = 6
+   * total hours wasted here = 8
    */
   parse_message(message: string, parser: Parser): ParsedMessage {
     const prsr: ParserRegex = this.resolve_parser(this.get_server_parser());
 
-    if (prsr.join_re.test(message)) {
-      prsr.join_re.exec(message)
-      const props: { [key: string]: string } | undefined = prsr.join_re.exec(message)?.groups
+    const patterns: { re: RegExp, type: 'join'|'part'|'message', msg: string }[] = [
+      { re: prsr.join_re, type: 'join', msg: '**${props.user}** has joined the game.' },
+      { re: prsr.part_re, type: 'part', msg: '**${props.user}** has left the game.' },
+      { re: prsr.message_re, type: 'message', msg: '<**${props.user}**> ${props.msg}' }
+    ];
 
-      return {
-        // @ts-ignore
-        message: `[mc:${parser.server.exid}] **${props.user}** has joined the game.`,
-        // @ts-ignore
-        user: props.user,
-        msg: null,
-        type: 'join',
-        source: parser.server.exid,
-      }
-    } else if (prsr.part_re.test(message)) {
-      prsr.part_re.exec(message)
-      const props: { [key: string]: string } | undefined = prsr.part_re.exec(message)?.groups
+    for (const {re, type, msg} of patterns) {
+      const match: RegExpMatchArray|null = re.exec(message);
+      if (match?.groups) {
+        const props: { [key: string]: string } = match.groups;
 
-      return {
-        // @ts-ignore
-        message: `[mc:${parser.server.exid}] **${props.user}** has left the game.`,
-        // @ts-ignore
-        user: props.user,
-        msg: null,
-        type: 'part',
-        source: parser.server.exid,
-      }
-    } else if (prsr.message_re.test(message)) {
-      prsr.message_re.exec(message)
-      const props: { [key: string]: string } | undefined = prsr.message_re.exec(message)?.groups
-
-      return {
-        // @ts-ignore
-        message: `[mc:${parser.server.exid}] <**${props.user}**> ${props.msg}`,
-        // @ts-ignore
-        user: props.user,
-        // @ts-ignore
-        msg: props.msg,
-        type: 'message',
-        source: parser.server.exid,
+        return {
+          message: `[mc:${parser.server.exid}] ${msg.replace('${props.user}', props.user).replace('${props.msg}', props.msg)}`,
+          user: props.user,
+          msg: props.msg || null,
+          type,
+          source: parser.server.exid,
+        }
       }
     }
 
-    return {
-      message: '',
-      user: '',
-      msg: '',
-      type: 'void',
-      source: '',
-    }
+    throw new Error('Unmatched message regex.')
   }
 
   private get_server_parser(): string {
     const parser: ParserEntry = this.serversMap.find((se: ServerEntry): boolean => this.server.exid === se.server);
-
-    if (!parser) return "vanilla";
-
-    return parser.parser;
+    return parser?.parser || 'vanilla';
   }
 
   private resolve_parser(parser: string): ParserRegex {

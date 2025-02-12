@@ -16,27 +16,31 @@ export default class LogToFile {
     fs.closeSync(this.file);
   }
 
-  error(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/error] ${text}\n`);
+  error(text: string): void {
+    this.output('debug', text);
   }
 
-  warn(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/warn] ${text}\n`);
+  warn(text: string): void {
+    this.output('warn', text);
   }
 
-  success(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/success] ${text}\n`);
+  success(text: string): void {
+    this.output('success', text);
   }
 
-  info(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/info] ${text}\n`);
+  info(text: string): void {
+    this.output('info', text);
   }
 
-  log(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/log] ${text}\n`);
+  log(text: string): void {
+    this.output('log', text);
   }
 
-  debug(...text: string[]): void {
-    fs.writeSync(this.file, `${this.time} [log/debug] ${text}\n`);
+  debug(text: string): void {
+    this.output('debug', text);
+  }
+
+  output(type: string, text: any) {
+    fs.writeSync(this.file, `${this.time} [log/${type}] ${text}\n`)
   }
 }

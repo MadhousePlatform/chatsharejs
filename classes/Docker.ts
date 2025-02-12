@@ -1,39 +1,33 @@
 import InternalServer from "&/InternalServer.ts";
-import docker, { Container } from 'dockerode';
-import { client } from "../bot/madbot.ts";
-import { config, flog } from "@/bootstrap.ts";
-import { TextChannel } from "discord.js";
+import { flog } from "@/bootstrap.ts";
+import config from "@/config.ts";
+import { client } from "%/madbot.ts";
 import Parser from "$/Parser.ts";
+import docker, { Container } from 'dockerode';
+import { Channel, TextChannel } from "discord.js";
 
 export default class Docker {
-  handle_server(server: InternalServer, parser: Parser, all_servers: InternalServer[]): void {
-    let cntnr = new docker({
-      socketPath: '/var/run/docker.sock'
-    });
-    let dckr: Container = cntnr.getContainer(server.cid);
+  handle_server(container: any, server: InternalServer, parser: Parser, all_servers: InternalServer[]): void {
+    let docker: Container = container.getContainer(server.cid);
 
-    dckr.attach({
+    docker.attach({
       stream: true,
       stdout: true,
       stderr: true
-    }, async (_err: any, stream: NodeJS.ReadWriteStream | undefined) => {
-      // @ts-ignore
-      const chan: TextChannel = await client.channels.fetch(config.DISCORD_CHANNEL);
-      if (!stream) throw Error("Stream is not defined??????");
+    }, async (_err: any, stream: NodeJS.ReadWriteStream | undefined): Promise<void> => {
+      const channel: Channel | null = await client.channels.fetch(config.discord.channel);
 
-      stream.on('data', async (chunk) => {
-        // get data from chunk and convert to string
-        const data: string = Buffer.from(chunk).toString()
-        // figure out the command we want to send.
+      if (!(channel instanceof TextChannel)) throw new Error('Invalid type of channel specified. Please use a Text Channel.')
+      if (!stream) throw new Error("Stream is not defined");
+
+      stream.on('data', async (chunk: any): Promise<void> => {
+        const data: string = chunk.toString()
         const { message, user, msg, type, source } = parser.parse_message(data, parser);
 
-        if (message !== null && type !== "void") {
-          /* send to discord */
-          await chan.send(message).then(() => {
-            /* get command for minecraft */
+        if (message && type !== "void") {
+          await channel.send(message).then((): void => {
             const cmd: string = this.getMessage(user, msg, type, source)
-
-            this.broadcastToAll(cmd, all_servers, cntnr, server)
+            this.broadcastToAll(cmd, all_servers, container, server)
           });
         }
       });
@@ -63,24 +57,22 @@ export default class Docker {
   }
 
   private getMessage(user: string, msg: string | null, type: 'join' | 'part' | 'message' | 'void', source: string): string {
-    let msgText: string = '';
-
-    switch (type) {
-      case 'join':
-        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"${user} has joined the server","color":"white"}]\n`;
-        break;
-      case 'part':
-        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"${user} has left the server","color":"white"}]\n`;
-        break;
-      case 'message':
-        msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"<${user}> ","color":"blue"},{"text":"${msg}","color":"white"}]\n`;
-        break;
-      case 'void':
-      default:
-        flog.warn(`Docker.getMessage()->type was not join|part|message`)
-        break;
+    if (type === 'void') {
+      flog.warn('Docker.getMessage()->type was not join|part|message');
+      return '';
     }
 
-    return msgText;
+    const baseText = `[mc:${source}] `;
+    let messageText = '';
+
+    if (type === 'join') {
+      messageText = `${user} has joined the server`;
+    } else if (type === 'part') {
+      messageText = `${user} has left the server`;
+    } else if (type === 'message' && msg) {
+      messageText = `<${user}> ${msg}`;
+    }
+
+    return `tellraw @a [{"text":"${baseText}","color":"red"},{"text":"${messageText}","color":"white"}]\n`;
   }
 }

@@ -1,63 +1,83 @@
-import { config, log } from "./bootstrap.ts";
+import { flog, log } from "./bootstrap.ts";
+import config from "@/config.ts";
 import Server from "$/Server.ts";
-import { AxiosResponse } from "axios";
 import Parser from "$/Parser.ts";
+import Docker from "$/Docker.ts";
 import PterodactylServer from "&/PterodactylServer.ts";
 import InternalServer from "&/InternalServer.ts";
-import Docker from "$/Docker.ts";
-import { client } from "../bot/madbot.ts";
-import { TextChannel, Message, Events } from "discord.js";
+import { client } from "%/madbot.ts";
 import docker from "dockerode";
+import { AxiosResponse } from "axios";
+import { Channel, TextChannel, Message, Events } from "discord.js";
 
+/**
+ * Authenticate the bot to Discord and display connection message.
+ */
 async function startDiscordBot(): Promise<void> {
-  await client.login(config.DISCORD_TOKEN)
-  // @ts-ignore
-  const channel: TextChannel = await client.channels.fetch(config.DISCORD_CHANNEL);
-  channel.send(`I'm online!`).then((message: Message) => {
-    setTimeout(() => {
-      message.delete();
-    }, 5000);
-  });
+  await client.login(config.discord.token)
+  const channel: Channel | null = await client.channels.fetch(config.discord.log_channel);
+  flog.info('Bot started and connected to Discord.')
+
+  if (!channel) throw new Error('Invalid Discord log channel.')
+  if (!(channel instanceof TextChannel)) throw new Error('Invalid type of channel specified. Please use a Text Channel.')
+
+  await channel.send(`Connected and listening for events.`);
 }
 
+/**
+ * Start the main chatshare instance.
+ */
 async function startChatShare(): Promise<void> {
   await startDiscordBot();
 
   const servers: AxiosResponse = await (new Server).get_all();
   const ids: Array<InternalServer> = [];
-  servers.data.data.filter(
-    (s: PterodactylServer) => !s.attributes.suspended && s.attributes.external_id !== null
-      ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid })
-      : ''
+
+  servers.data.data.filter((s: PterodactylServer) => {
+      if (!s.attributes.suspended && s.attributes.external_id !== null) {
+        ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid });
+      }
+    }
   );
 
-  const my_servers: InternalServer[] = process.env.NODE_ENV === 'production'
-    ? ids
-    : [{exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1'}];
+  /* The false side of the ternary is the ID of the container I use in development. */
+  const filtered_servers: InternalServer[] =
+    config.env === 'production' && ids.length ? ids : [{ exid: 'vanilla', cid: config.dev.container_id }];
 
-  let cntnr = new docker({
-    socketPath: '/var/run/docker.sock'
-  });
+  let cntnr = new docker({ socketPath: '/var/run/docker.sock' });
 
   client.on(Events.MessageCreate, async (message: Message) => {
     if (message.author.bot) return;
-    if (message.channelId !== config.DISCORD_CHANNEL) return;
+    if (message.channelId !== config.discord.channel) return;
 
-    const cmd: string = `tellraw @a [{"text":"[discord] ","color":"blue"},{"text":"<${message.author.username}> ","color":"light_purple"},{"text":"${message.content}","color":"white"}]\n`;
+    const part = {
+      prefix: { "text": "[discord] ", "color": "blue" },
+      author: { "text": `<${message.author.username}> `, "color": "light_purple" },
+      message: { "text": message.content, "color": "white" }
+    }
 
-    (new Docker).broadcastToAll(cmd, my_servers, cntnr, null)
+    const cmd: string = `tellraw @a [${part.prefix},${part.author},${part.message}]\n`;
+
+    (new Docker).broadcastToAll(cmd, filtered_servers, cntnr, null)
   })
 
-  my_servers.forEach((server: InternalServer) => {
-    log.debug(`Iterating servers (Server: ${server.exid})`)
+  filtered_servers.forEach((server: InternalServer) => {
     const parser = new Parser(server);
-    if (parser !== undefined) {
-      parser.new();
-      (new Docker).handle_server(server, parser, my_servers);
-    }
+    parser.new();
+    (new Docker).handle_server(cntnr, server, parser, filtered_servers);
   });
 }
 
-startChatShare().then((): void => {
-  log.debug('Starting ChatShare');
-});
+try {
+  startChatShare().then((): void => {
+    log.debug(`Starting ChatShare v${config.version}`);
+  });
+} catch (err) {
+  if (err instanceof Error) {
+    log.error(err.message);
+    flog.error(err.message);
+  } else {
+    log.error(err);
+    flog.error(`Unknown exception: ${err}`);
+  }
+}
