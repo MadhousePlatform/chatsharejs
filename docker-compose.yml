@@ -12,6 +12,7 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - './map.ts:/map.ts'
       - './.env:/.env'
+      - './logs:/logs'
     networks:
       - default
 
