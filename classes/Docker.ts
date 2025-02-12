@@ -24,7 +24,7 @@ export default class Docker {
         const data: string = chunk.toString()
         const { message, user, msg, type, source } = parser.parse_message(data, parser);
 
-        if (message && type !== "void") {
+        if (message) {
           await channel.send(message).then((): void => {
             const cmd: string = this.getMessage(user, msg, type, source)
             this.broadcastToAll(cmd, all_servers, container, server)
