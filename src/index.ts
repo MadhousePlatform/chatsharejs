@@ -31,14 +31,13 @@ async function startChatShare(): Promise<void> {
   await startDiscordBot();
 
   const servers: AxiosResponse = await (new Server).get_all();
-  const ids: Array<InternalServer> = [];
 
-  servers.data.data.filter((s: PterodactylServer) => {
-      if (!s.attributes.suspended && s.attributes.external_id !== null) {
-        ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid });
-      }
-    }
-  );
+  const ids = servers.data.data
+    .filter((s: PterodactylServer) => !s.attributes.suspended && s.attributes.external_id !== null)
+    .map((s: PterodactylServer) => ({
+      exid: s.attributes.external_id,
+      cid: s.attributes.uuid
+    }));
 
   /* The false side of the ternary is the ID of the container I use in development. */
   const filtered_servers: InternalServer[] =
@@ -51,9 +50,9 @@ async function startChatShare(): Promise<void> {
     if (message.channelId !== config.discord.channel) return;
 
     const part = {
-      prefix: { "text": "[discord] ", "color": "blue" },
-      author: { "text": `<${message.author.username}> `, "color": "light_purple" },
-      message: { "text": message.content, "color": "white" }
+      prefix: `{ "text": "[discord] ", "color": "blue" }`,
+      author: `{ "text": "<${message.author.username}> ", "color": "light_purple" }`,
+      message: `{ "text": "${message.content}", "color": "white" }`
     }
 
     const cmd: string = `tellraw @a [${part.prefix},${part.author},${part.message}]\n`;

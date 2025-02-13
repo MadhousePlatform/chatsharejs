@@ -45,7 +45,7 @@ export default class Parser {
   parse_message(message: string, parser: Parser): ParsedMessage {
     const prsr: ParserRegex = this.resolve_parser(this.get_server_parser());
 
-    const patterns: { re: RegExp, type: 'join'|'part'|'message', msg: string }[] = [
+    const patterns: { re: RegExp, type: 'join'|'part'|'message'|'void', msg: string }[] = [
       { re: prsr.join_re, type: 'join', msg: '**${props.user}** has joined the game.' },
       { re: prsr.part_re, type: 'part', msg: '**${props.user}** has left the game.' },
       { re: prsr.message_re, type: 'message', msg: '<**${props.user}**> ${props.msg}' }
@@ -66,7 +66,13 @@ export default class Parser {
       }
     }
 
-    throw new Error('Unmatched message regex.')
+    return {
+      message: '',
+      user: '',
+      msg: null,
+      type: 'void',
+      source: '',
+    }
   }
 
   private get_server_parser(): string {

@@ -21,10 +21,10 @@ export default class Docker {
       if (!stream) throw new Error("Stream is not defined");
 
       stream.on('data', async (chunk: any): Promise<void> => {
-        const data: string = chunk.toString()
+        const data: string = Buffer.from(chunk).toString()
         const { message, user, msg, type, source } = parser.parse_message(data, parser);
 
-        if (message) {
+        if (message && type !== 'void') {
           await channel.send(message).then((): void => {
             const cmd: string = this.getMessage(user, msg, type, source)
             this.broadcastToAll(cmd, all_servers, container, server)
@@ -42,6 +42,7 @@ export default class Docker {
       docker.getContainer(s.cid)
         // @ts-ignore
         .attach(opts, (_err: any, stream: NodeJS.ReadWriteStream): void => {
+          console.log(cmd);
           stream?.pipe(process.stdout);
           stream?.pipe(process.stderr);
 
