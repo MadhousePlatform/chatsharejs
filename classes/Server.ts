@@ -4,6 +4,6 @@ import { AxiosResponse } from "axios";
 export default class Server
 {
   async get_all(): Promise<AxiosResponse> {
-    return await request.get('application/servers');
+    return await request.get('api/application/servers');
   }
 }

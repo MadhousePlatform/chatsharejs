@@ -25,6 +25,7 @@ async function startChatShare(): Promise<void> {
 
   const servers: AxiosResponse = await (new Server).get_all();
   const ids: Array<InternalServer> = [];
+
   servers.data.data.filter(
     (s: PterodactylServer) => !s.attributes.suspended && s.attributes.external_id !== null
       ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid })
@@ -33,7 +34,7 @@ async function startChatShare(): Promise<void> {
 
   const my_servers: InternalServer[] = process.env.NODE_ENV === 'production'
     ? ids
-    : [{exid: 'vanilla', cid: '38f4fa43fef187e43ac4d8ceee95560440b94d58dffc6772c9d3a7ffd5e695f1'}];
+    : [{exid: 'vanilla', cid: 'cb818b6c10b620a81ed7ede855136cfde6aab352be74436ab0d0395488008bb3'}];
 
   let cntnr = new docker({
     socketPath: '/var/run/docker.sock'

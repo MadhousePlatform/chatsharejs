@@ -25,9 +25,9 @@ export default class Docker {
         // get data from chunk and convert to string
         const data: string = Buffer.from(chunk).toString()
         // figure out the command we want to send.
-        const { message, user, msg, type, source } = parser.parse_message(data, parser);
+        const { message, operator, user, msg, type, source } = parser.parse_message(data, parser);
 
-        if (message !== null && type !== "void") {
+        if (message !== null && ['join', 'part', 'message'].includes(type)) {
           /* send to discord */
           await chan.send(message).then(() => {
             /* get command for minecraft */
@@ -35,6 +35,20 @@ export default class Docker {
 
             this.broadcastToAll(cmd, all_servers, cntnr, server)
           });
+        }
+
+        if (type === 'ban') {
+          await chan.send(message).then(() => {
+            flog.log(`${operator} banned ${user} on ${source}`);
+            this.broadcastToAll(this.getMessage(user, msg, type, source), all_servers, cntnr, server);
+          })
+        }
+
+        if (type === 'unban') {
+          await chan.send(message).then(() => {
+            flog.log(`${operator} unbanned ${user} on ${source}`);
+            this.broadcastToAll(this.getMessage(user, msg, type, source), all_servers, cntnr, server);
+          })
         }
       });
     })
@@ -62,7 +76,7 @@ export default class Docker {
     })
   }
 
-  private getMessage(user: string, msg: string | null, type: 'join' | 'part' | 'message' | 'void', source: string): string {
+  private getMessage(user: string, msg: string | null, type: 'join' | 'part' | 'message' | 'ban' | 'unban' | 'void', source: string): string {
     let msgText: string = '';
 
     switch (type) {
@@ -74,6 +88,12 @@ export default class Docker {
         break;
       case 'message':
         msgText = `tellraw @a [{"text":"[mc:${source}] ","color":"red"},{"text":"<${user}> ","color":"blue"},{"text":"${msg}","color":"white"}]\n`;
+        break;
+      case 'ban':
+        msgText = `ban ${user}`;
+        break;
+      case 'unban':
+        msgText = `pardon ${user}`;
         break;
       case 'void':
       default:

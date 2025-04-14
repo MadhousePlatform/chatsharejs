@@ -6,7 +6,7 @@ services:
     stdin_open: true  # -i
     tty: true       # -t
     environment:
-      NODE_ENV: production
+      NODE_ENV: dev
       EULA: TRUE
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'

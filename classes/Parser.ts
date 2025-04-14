@@ -22,10 +22,13 @@ export default class Parser {
     const parser: ParserRegex = this.resolve_parser(server_parser);
 
     this.parser = parser;
+
     return {
       join_re: parser.join_re,
       part_re: parser.part_re,
-      message_re: parser.message_re
+      message_re: parser.message_re,
+      ban_re: parser.ban_re,
+      unban_re: parser.unban_re,
     }
   }
 
@@ -52,6 +55,7 @@ export default class Parser {
       return {
         // @ts-ignore
         message: `[mc:${parser.server.exid}] **${props.user}** has joined the game.`,
+        operator: null,
         // @ts-ignore
         user: props.user,
         msg: null,
@@ -65,6 +69,7 @@ export default class Parser {
       return {
         // @ts-ignore
         message: `[mc:${parser.server.exid}] **${props.user}** has left the game.`,
+        operator: null,
         // @ts-ignore
         user: props.user,
         msg: null,
@@ -78,6 +83,7 @@ export default class Parser {
       return {
         // @ts-ignore
         message: `[mc:${parser.server.exid}] <**${props.user}**> ${props.msg}`,
+        operator: null,
         // @ts-ignore
         user: props.user,
         // @ts-ignore
@@ -85,10 +91,44 @@ export default class Parser {
         type: 'message',
         source: parser.server.exid,
       }
+    } else if (prsr.ban_re.test(message)) {
+      prsr.ban_re.exec(message)
+      const props: { [key: string]: string } | undefined = prsr.ban_re.exec(message)?.groups
+      console.log(props);
+
+      return {
+        // @ts-ignore
+        message: `[mc:${parser.server.exid}] **${props.operator}** has banned **${props.user}**`,
+        // @ts-ignore
+        operator: props.operator,
+        // @ts-ignore
+        user: props.user,
+        // @ts-ignore
+        msg: null,
+        type: 'ban',
+        source: parser.server.exid,
+      }
+    } else if (prsr.unban_re.test(message)) {
+      prsr.unban_re.exec(message)
+      const props: { [key: string]: string } | undefined = prsr.unban_re.exec(message)?.groups
+
+      return {
+        // @ts-ignore
+        message: `[mc:${parser.server.exid}] **${props.operator}** has unbanned **${props.user}**`,
+        // @ts-ignore
+        operator: props.operator,
+        // @ts-ignore
+        user: props.user,
+        // @ts-ignore
+        msg: null,
+        type: 'unban',
+        source: parser.server.exid,
+      }
     }
 
     return {
       message: '',
+      operator: null,
       user: '',
       msg: '',
       type: 'void',

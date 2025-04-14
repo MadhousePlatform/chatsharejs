@@ -17,28 +17,23 @@
     }
   ],
   "scripts": {
-    "dev": "vite-node -w -m dev src/index.ts",
-    "build": "tsc && vite build"
+    "dev": "tsx src/index.ts",
+    "build": "tsc"
   },
   "devDependencies": {
-    "@types/dockerode": "^3.3.34",
-    "@types/express": "^5.0.0",
-    "@types/luxon": "^3.4.2",
-    "@types/node": "^22.13.1",
-    "concurrently": "^9.1.2",
-    "typescript": "~5.6.3",
-    "vite": "^6.0.11",
-    "vite-node": "^3.0.5",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5"
+    "@types/dockerode": "^3.3.38",
+    "@types/luxon": "^3.6.2",
+    "@types/node": "^22.14.1",
+    "tsx": "^4.19.3",
+    "typescript": "~5.8.3"
   },
   "dependencies": {
-    "axios": "^1.7.9",
+    "axios": "^1.8.4",
     "chalk": "^5.4.1",
-    "discord.js": "^14.17.3",
-    "dockerode": "^4.0.4",
-    "dotenv": "^16.4.7",
-    "luxon": "^3.5.0",
+    "discord.js": "^14.18.0",
+    "dockerode": "^4.0.5",
+    "dotenv": "^16.5.0",
+    "luxon": "^3.6.1",
     "typescript-logging": "^2.2.0",
     "typescript-logging-log4ts-style": "^2.2.0"
   }
