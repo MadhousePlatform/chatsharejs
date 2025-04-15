@@ -9,6 +9,9 @@ import { client } from "../bot/madbot.ts";
 import { TextChannel, Message, Events } from "discord.js";
 import docker from "dockerode";
 
+export let serverCount = 0;
+export let my_servers: InternalServer[];
+
 async function startDiscordBot(): Promise<void> {
   await client.login(config.DISCORD_TOKEN)
   // @ts-ignore
@@ -28,13 +31,13 @@ async function startChatShare(): Promise<void> {
 
   servers.data.data.filter(
     (s: PterodactylServer) => !s.attributes.suspended && s.attributes.external_id !== null
-      ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid })
+      ? ids.push({ exid: s.attributes.external_id, cid: s.attributes.uuid, identifier: s.attributes.identifier, port: 0, })
       : ''
   );
 
-  const my_servers: InternalServer[] = process.env.NODE_ENV === 'production'
+  my_servers = process.env.NODE_ENV === 'production'
     ? ids
-    : [{exid: 'vanilla', cid: 'cb818b6c10b620a81ed7ede855136cfde6aab352be74436ab0d0395488008bb3'}];
+    : [{exid: 'vanilla', cid: config.DEV_MC_CONTAINER ?? '', identifier: '', port: 0 }];
 
   let cntnr = new docker({
     socketPath: '/var/run/docker.sock'
@@ -50,14 +53,19 @@ async function startChatShare(): Promise<void> {
   })
 
   my_servers.forEach((server: InternalServer) => {
+    serverCount++;
     log.debug(`Iterating servers (Server: ${server.exid})`)
+
+    server.port = (new Server).get_server_port(server.identifier);
     const parser = new Parser(server);
+
     if (parser !== undefined) {
       parser.new();
       (new Docker).handle_server(server, parser, my_servers);
     }
   });
 }
+
 
 startChatShare().then((): void => {
   log.debug('Starting ChatShare');

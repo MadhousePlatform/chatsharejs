@@ -34,6 +34,7 @@
     "dockerode": "^4.0.5",
     "dotenv": "^16.5.0",
     "luxon": "^3.6.1",
+    "mc-server-utilities": "^5.4.4",
     "typescript-logging": "^2.2.0",
     "typescript-logging-log4ts-style": "^2.2.0"
   }
